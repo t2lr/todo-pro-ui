@@ -2,7 +2,7 @@ import type { LoginParams, LoginResult } from '@/shared/types/user/login';
 
 import type { Dispatch } from '@reduxjs/toolkit';
 
-import { apiLogin, apiLogout } from '@/configs/api/user.api';
+import { apiLogin, apiLogout } from '@/shared/configs/api/user.api';
 import { setUserItem } from '@/stores/user.store';
 import { createAsyncAction } from '@/stores/utils';
 

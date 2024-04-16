@@ -7,16 +7,22 @@ import dayjs from 'dayjs';
 import { Suspense, useEffect } from 'react';
 import { IntlProvider } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
-import { HistoryRouter, history } from '@/configs/routes/history';
+import { HistoryRouter, history } from '@/shared/configs/routes/history';
 
 import { LocaleFormatter, localeConfig } from '@/shared/locales';
-import RenderRouter from '../configs/routes';
-import { setGlobalState } from '../stores/global.store';
-import FirebaseProvider from '@/hooks/useFirebaseProvider';
+import RenderRouter from '../shared/configs/routes';
+import { setGlobalState } from '../stores/store/global.store';
+import { AuthProvider } from '@/hooks';
 import { AppState } from '@/stores';
 
-const App: React.FC = () => {
+type Props = {
+  client: QueryClient;
+};
+
+const App = ({ client }: Props) => {
   const { locale } = useSelector((state: AppState) => state.user);
   const { theme, loading } = useSelector((state: AppState) => state.global);
   const dispatch = useDispatch();
@@ -37,16 +43,12 @@ const App: React.FC = () => {
     if (!localStorage.getItem('theme')) {
       const mql = window.matchMedia('(prefers-color-scheme: dark)');
 
-      function matchMode(e: MediaQueryListEvent) {
-        setTheme(e.matches);
-      }
+      const matchMode = (e: MediaQueryListEvent) => setTheme(e.matches);
 
       mql.addEventListener('change', matchMode);
     }
   }, []);
 
-  // set the locale for the user
-  // more languages options can be added here
   useEffect(() => {
     if (locale === 'en_US') {
       dayjs.locale('en');
@@ -55,11 +57,6 @@ const App: React.FC = () => {
     }
   }, [locale]);
 
-  /**
-   * handler function that passes locale
-   * information to ConfigProvider for
-   * setting language across text components
-   */
   const getAntdLocale = () => {
     if (locale === 'en_US') {
       return enUS;
@@ -69,41 +66,44 @@ const App: React.FC = () => {
   };
 
   return (
-    <FirebaseProvider>
-      <ConfigProvider
-        locale={getAntdLocale()}
-        componentSize="middle"
-        theme={{
-          token: { colorPrimary: '#13c2c2' },
-          algorithm:
-            theme === 'dark'
-              ? antdTheme.darkAlgorithm
-              : antdTheme.defaultAlgorithm
-        }}
-      >
-        <IntlProvider
-          locale={locale.split('_')[0]}
-          messages={localeConfig[locale]}
+    <QueryClientProvider client={client}>
+      <AuthProvider>
+        <ConfigProvider
+          locale={getAntdLocale()}
+          componentSize="middle"
+          theme={{
+            token: { colorPrimary: '#13c2c2' },
+            algorithm:
+              theme === 'dark'
+                ? antdTheme.darkAlgorithm
+                : antdTheme.defaultAlgorithm
+          }}
         >
-          <HistoryRouter history={history as any}>
-            <Suspense fallback={null}>
-              <Spin
-                spinning={loading}
-                className="app-loading-wrapper"
-                style={{
-                  backgroundColor:
-                    theme === 'dark'
-                      ? 'rgba(0, 0, 0, 0.44)'
-                      : 'rgba(255, 255, 255, 0.44)'
-                }}
-                tip={<LocaleFormatter id="gloabal.tips.loading" />}
-              ></Spin>
-              <RenderRouter />
-            </Suspense>
-          </HistoryRouter>
-        </IntlProvider>
-      </ConfigProvider>
-    </FirebaseProvider>
+          <IntlProvider
+            locale={locale.split('_')[0]}
+            messages={localeConfig[locale]}
+          >
+            <HistoryRouter history={history as any}>
+              <Suspense fallback={null}>
+                <Spin
+                  spinning={loading}
+                  className="app-loading-wrapper"
+                  style={{
+                    backgroundColor:
+                      theme === 'dark'
+                        ? 'rgba(0, 0, 0, 0.44)'
+                        : 'rgba(255, 255, 255, 0.44)'
+                  }}
+                  tip={<LocaleFormatter id="gloabal.tips.loading" />}
+                ></Spin>
+                <RenderRouter />
+              </Suspense>
+            </HistoryRouter>
+          </IntlProvider>
+        </ConfigProvider>
+      </AuthProvider>
+      <ReactQueryDevtools />
+    </QueryClientProvider>
   );
 };
 

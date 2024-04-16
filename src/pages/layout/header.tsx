@@ -11,22 +11,22 @@ import { createElement } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import Avator from '@/configs/assets/header/avator.jpeg';
-import EnUsSvg from '@/configs/assets/header/en_US.svg?react';
-import LanguageSvg from '@/configs/assets/header/language.svg?react';
-import MoonSvg from '@/configs/assets/header/moon.svg?react';
-import SunSvg from '@/configs/assets/header/sun.svg?react';
-import ZhCnSvg from '@/configs/assets/header/zh_CN.svg?react';
-import AntdSvg from '@/configs/assets/logo/antd.svg';
-import ReactSvg from '@/configs/assets/logo/react.svg';
+import Avator from '@/shared/configs/assets/header/avator.jpeg';
+import EnUsSvg from '@/shared/configs/assets/header/en_US.svg?react';
+import LanguageSvg from '@/shared/configs/assets/header/language.svg?react';
+import MoonSvg from '@/shared/configs/assets/header/moon.svg?react';
+import SunSvg from '@/shared/configs/assets/header/sun.svg?react';
+import ZhCnSvg from '@/shared/configs/assets/header/zh_CN.svg?react';
 
 import { LocaleFormatter, useLocale } from '@/shared/locales';
-import { setGlobalState } from '@/stores/global.store';
-import { setUserItem } from '@/stores/user.store';
+import { setGlobalState } from '@/stores/store/global.store';
+import { setUserItem } from '@/stores/store/user.store';
 
-import { logoutAsync } from '@/stores/actions/user.action';
 import HeaderNoticeComponent from './notice';
 import { AppState } from '@/stores';
+import useAuth from '@/hooks/useAuth';
+import { STATUS } from '@/shared/configs/constants';
+import { setStatusModal } from '@/stores/store';
 
 const { Header } = Layout;
 
@@ -38,13 +38,15 @@ interface HeaderProps {
 type Action = 'userInfo' | 'userSetting' | 'logout';
 
 const HeaderComponent: FC<HeaderProps> = ({ collapsed, toggle }) => {
-  const { logged, locale, device, avatar } = useSelector(
-    (state: AppState) => state.user
-  );
+  const { userId, src, handleLogOut } = useAuth();
+
+  const dispatch = useDispatch();
+  const actionModal = (type: STATUS) => dispatch(setStatusModal(type));
+
+  const { locale, device } = useSelector((state: AppState) => state.user);
   const { theme } = useSelector((state: AppState) => state.global);
   const navigate = useNavigate();
   const token = antTheme.useToken();
-  const dispatch = useDispatch();
   const { formatMessage } = useLocale();
 
   const onActionClick = async (action: Action) => {
@@ -54,9 +56,7 @@ const HeaderComponent: FC<HeaderProps> = ({ collapsed, toggle }) => {
       case 'userSetting':
         return;
       case 'logout':
-        // const res = Boolean(await dispatch(logoutAsync()));
-
-        // res && navigate('/login');
+        await handleLogOut();
 
         return;
     }
@@ -89,7 +89,7 @@ const HeaderComponent: FC<HeaderProps> = ({ collapsed, toggle }) => {
     >
       {device !== 'MOBILE' && (
         <div className="logo font-bold" style={{ width: collapsed ? 80 : 200 }}>
-          xpia365
+          Fishub
         </div>
       )}
       <div className="layout-page-header-main">
@@ -136,7 +136,7 @@ const HeaderComponent: FC<HeaderProps> = ({ collapsed, toggle }) => {
             <span>{<LanguageSvg />}</span>
           </Dropdown>
 
-          {logged ? (
+          {userId ? (
             <Dropdown
               menu={{
                 items: [
@@ -144,9 +144,9 @@ const HeaderComponent: FC<HeaderProps> = ({ collapsed, toggle }) => {
                     key: '1',
                     icon: <UserOutlined />,
                     label: (
-                      <span onClick={() => navigate('/dashboard')}>
-                        <LocaleFormatter id="header.avator.account" />
-                      </span>
+                      <div onClick={() => actionModal(STATUS.USER_INFO)}>
+                        Profile
+                      </div>
                     )
                   },
                   {
@@ -162,11 +162,7 @@ const HeaderComponent: FC<HeaderProps> = ({ collapsed, toggle }) => {
               }}
             >
               <span className="user-action">
-                <img
-                  src={avatar || Avator}
-                  className="user-avator"
-                  alt="avator"
-                />
+                <img src={src || Avator} className="user-avator" alt="avator" />
               </span>
             </Dropdown>
           ) : (

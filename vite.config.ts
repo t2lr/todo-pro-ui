@@ -3,6 +3,12 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import vitePluginImp from 'vite-plugin-imp';
 import svgrPlugin from 'vite-plugin-svgr';
+import VitePluginMetaEnv from 'vite-plugin-meta-env';
+
+const metaEnv = {
+  API_CLIENT: 'http://localhost:3002',
+  COOKIE_ACCESS_TOKEN_KEY: 'access_token'
+};
 
 export default defineConfig({
   build: {
@@ -20,12 +26,13 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: `http://localhost:${process.env.PORT}/api`,
-        // changeOrigin: true,
+        changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
   },
   plugins: [
+    VitePluginMetaEnv(metaEnv, 'import.meta.env'),
     react({
       jsxImportSource: '@emotion/react',
       babel: {

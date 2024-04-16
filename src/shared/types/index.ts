@@ -13,3 +13,5 @@ export interface PageData<T> {
   total: number;
   data: T[];
 }
+
+export type Nullable<T> = T | null;

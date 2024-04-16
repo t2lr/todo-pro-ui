@@ -1,17 +1,16 @@
-import type { MenuList } from '@/shared/types/layout/menu.interface';
 import type { FC } from 'react';
 
 import { Menu } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { setUserItem } from '@/stores/user.store';
+import { setUserItem } from '@/stores/store/user.store';
 
-import { CustomIcon } from './customIcon';
 import { AppState } from '@/stores';
+import { Project } from '@/entities/project/model';
 
 interface MenuProps {
-  menuList: MenuList;
+  projects: Project[];
   openKey?: string;
   onChangeOpenKey: (key?: string) => void;
   selectedKey: string;
@@ -19,23 +18,16 @@ interface MenuProps {
 }
 
 const MenuComponent: FC<MenuProps> = (props) => {
-  const {
-    menuList,
-    openKey,
-    onChangeOpenKey,
-    selectedKey,
-    onChangeSelectedKey
-  } = props;
+  const { openKey, onChangeOpenKey, selectedKey, onChangeSelectedKey } = props;
   const { device, locale } = useSelector((state: AppState) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const getTitle = (menu: MenuList[0]) => {
+  const getTitle = (menu: any) => {
     return (
-      <span style={{ display: 'flex', alignItems: 'center' }}>
-        <CustomIcon type={menu.icon!} />
-        <span>{menu.label[locale]}</span>
-      </span>
+      <div className="flex">
+        <div>{menu.label[locale]}</div>
+      </div>
     );
   };
 
@@ -54,6 +46,32 @@ const MenuComponent: FC<MenuProps> = (props) => {
     onChangeOpenKey(key);
   };
 
+  const menuList = [
+    {
+      code: 'worklog',
+      label: {
+        en_US: 'Worklog'
+      },
+      icon: 'worklog',
+      path: '/worklog'
+    },
+    {
+      code: 'project',
+      label: {
+        en_US: 'Project'
+      },
+      icon: 'project',
+      path: '/project',
+      children: props.projects.map((project) => ({
+        code: project.title,
+        label: {
+          en_US: project.title
+        },
+        path: `/project/${project.id}`
+      }))
+    }
+  ];
+
   return (
     <Menu
       mode="inline"
@@ -67,9 +85,9 @@ const MenuComponent: FC<MenuProps> = (props) => {
           ? {
               key: menu.code,
               label: getTitle(menu),
-              children: menu.children.map((child) => ({
+              children: menu.children.map((child: any) => ({
                 key: child.path,
-                label: child.label[locale]
+                label: <div>{child.label[locale]}</div>
               }))
             }
           : {

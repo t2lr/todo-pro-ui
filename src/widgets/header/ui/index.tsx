@@ -27,6 +27,7 @@ import { setUserItem } from '@/stores/user.store';
 import { logoutAsync } from '@/stores/actions/user.action';
 import HeaderNoticeComponent from './Notice';
 import { AppState } from '@/stores';
+import useAuth from '@/hooks/useAuth';
 
 const { Header } = Layout;
 
@@ -38,7 +39,9 @@ interface HeaderProps {
 type Action = 'userInfo' | 'userSetting' | 'logout';
 
 const HeaderComponent: FC<HeaderProps> = ({ collapsed, toggle }) => {
-  const { logged, locale, device, avatar } = useSelector(
+  const { userId } = useAuth();
+
+  const { locale, device, avatar } = useSelector(
     (state: AppState) => state.user
   );
   const { theme } = useSelector((state: AppState) => state.global);
@@ -81,7 +84,7 @@ const HeaderComponent: FC<HeaderProps> = ({ collapsed, toggle }) => {
       })
     );
   };
-
+  console.log(userId, 'userId');
   return (
     <Header
       className="layout-page-header bg-2"
@@ -89,7 +92,7 @@ const HeaderComponent: FC<HeaderProps> = ({ collapsed, toggle }) => {
     >
       {device !== 'MOBILE' && (
         <div className="logo font-bold" style={{ width: collapsed ? 80 : 200 }}>
-          xpia365
+          FisHub
         </div>
       )}
       <div className="layout-page-header-main">
@@ -136,7 +139,7 @@ const HeaderComponent: FC<HeaderProps> = ({ collapsed, toggle }) => {
             <span>{<LanguageSvg />}</span>
           </Dropdown>
 
-          {logged ? (
+          {userId ? (
             <Dropdown
               menu={{
                 items: [

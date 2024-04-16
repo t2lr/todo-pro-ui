@@ -9,7 +9,7 @@ import {
   removeAllTag,
   removeOtherTag,
   removeTag
-} from '@/stores/tags-view.store';
+} from '@/stores/store/tags-view.store';
 import { AppState } from '@/stores';
 
 const TagsViewAction: FC = () => {

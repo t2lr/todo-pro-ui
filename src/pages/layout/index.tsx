@@ -8,15 +8,19 @@ import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet, useLocation } from 'react-router';
 
-import { getMenuList } from '@/configs/api/layout.api';
-import { setUserItem } from '@/stores/user.store';
 import { getFirstPathCode } from '@/shared/utils/getFirstPathCode';
 import { getGlobalState } from '@/shared/utils/getGloabal';
 
 import HeaderComponent from './header';
 import MenuComponent from './menu';
-import TagsView from './tagView';
 import { AppState } from '@/stores';
+import { getMenuList } from '@/shared/configs/api/layout.api';
+import { Project } from './project';
+import { setUserItem } from '@/stores/store/user.store';
+import { useQuery } from '@tanstack/react-query';
+import { projectQueries } from '@/entities/project/api';
+import { isArrayNull } from '@/shared/utils';
+import { User } from './user';
 
 const { Sider, Content } = Layout;
 const WIDTH = 992;
@@ -25,14 +29,13 @@ const LayoutPage: FC = () => {
   const location = useLocation();
   const [openKey, setOpenkey] = useState<string>();
   const [selectedKey, setSelectedKey] = useState<string>(location.pathname);
-  const [menuList, setMenuList] = useState<MenuList>([]);
-  const { device, collapsed, newUser } = useSelector(
-    (state: AppState) => state.user
-  );
+  const { device, collapsed } = useSelector((state: AppState) => state.user);
   const token = antTheme.useToken();
 
   const isMobile = device === 'MOBILE';
   const dispatch = useDispatch();
+
+  const { data, isFetching, isLoading } = useQuery(projectQueries.list(1, 25));
 
   useEffect(() => {
     const code = getFirstPathCode(location.pathname);
@@ -68,7 +71,6 @@ const LayoutPage: FC = () => {
   const fetchMenuList = useCallback(async () => {
     const { status, result } = await getMenuList();
     if (status) {
-      setMenuList(result);
       dispatch(
         setUserItem({
           menuList: initMenuListAll(result)
@@ -96,8 +98,11 @@ const LayoutPage: FC = () => {
     };
   }, [dispatch]);
 
+  if (isFetching || isLoading) return;
+
   return (
     <Layout className="layout-page">
+      <User />
       <HeaderComponent collapsed={collapsed} toggle={toggle} />
       <Layout>
         {!isMobile ? (
@@ -110,8 +115,9 @@ const LayoutPage: FC = () => {
             collapsed={collapsed}
             breakpoint="md"
           >
+            {!collapsed && <Project />}
             <MenuComponent
-              menuList={menuList}
+              projects={isArrayNull(data?.projects)}
               openKey={openKey}
               onChangeOpenKey={(k) => setOpenkey(k)}
               selectedKey={selectedKey}
@@ -120,7 +126,7 @@ const LayoutPage: FC = () => {
           </Sider>
         ) : (
           <Drawer
-            width="200"
+            width="00"
             placement="left"
             bodyStyle={{ padding: 0, height: '100%' }}
             closable={false}
@@ -128,7 +134,7 @@ const LayoutPage: FC = () => {
             open={!collapsed}
           >
             <MenuComponent
-              menuList={menuList}
+              projects={isArrayNull(data?.projects)}
               openKey={openKey}
               onChangeOpenKey={(k) => setOpenkey(k)}
               selectedKey={selectedKey}
@@ -137,7 +143,6 @@ const LayoutPage: FC = () => {
           </Drawer>
         )}
         <Content className="layout-page-content">
-          <TagsView />
           <Suspense fallback={null}>
             <Outlet />
           </Suspense>

@@ -5,10 +5,13 @@ import { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
-import { addTag, removeTag, setActiveTag } from '@/stores/tags-view.store';
-
 import TagsViewAction from './tagViewAction';
 import { AppState } from '@/stores';
+import {
+  addTag,
+  removeTag,
+  setActiveTag
+} from '@/stores/store/tags-view.store';
 
 const TagsView: FC = () => {
   const { tags, activeTagId } = useSelector(

@@ -6,7 +6,7 @@ import { Avatar, Badge, List, Popover, Spin, Tabs, Tag, Tooltip } from 'antd';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { getNoticeList } from '@/configs/api/layout.api';
+import { getNoticeList } from '@/shared/configs/api/layout.api';
 import NoticeSvg from '@/configs/assets/header/notice.svg?react';
 import { EventStatus } from '@/shared/types/layout/notice.interface';
 import { useLocale } from '@/shared/locales';

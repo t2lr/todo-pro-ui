@@ -1,7 +1,5 @@
-import { FC } from 'react';
-
-const Index: FC = () => {
-  return <div className="">Home</div>;
+const Index = () => {
+  return <div className="">Analytic Data</div>;
 };
 
 export default Index;
